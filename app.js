@@ -29,9 +29,9 @@ app.get('/', (_req, res) => res.send('Hola API'));
 async function initializeApp() {
   try {
     await db_connection();
-    console.log('✅ Connected successfully');
+    console.log('✅ MongoDB: Connected successfully');
   } catch (error) {
-    console.error('❌ Connection not successfully', error.message);
+    console.error('❌ MongoDB: Connection not successfully', error.message);
   }
 }
 
