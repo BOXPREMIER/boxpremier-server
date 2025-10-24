@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 
 const { Schema, model, Types } = mongoose;
 
-
 function isGiftRequired() {
   return this.isGift === true;
 }
@@ -24,7 +23,6 @@ const SubscriptionSchema = new Schema(
       index: true,
     },
 
-
     wineType: { type: String, enum: ["mixed", "rose", "red", "sparkling"], trim: true },
     boxType: { type: String, enum: ["basic", "premium"], trim: true },
     boxSize: { type: Number, min: 1 },
@@ -33,7 +31,6 @@ const SubscriptionSchema = new Schema(
     startDate: { type: Date },
     nextPayDate: { type: Date },
     endDate: { type: Date },
-
 
     status: {
       type: String,
@@ -45,6 +42,7 @@ const SubscriptionSchema = new Schema(
     // Gift
     isGift: { type: Boolean, default: false },
 
+    // if isGift == true 
     giftFromId: {
       type: Types.ObjectId, ref: "User", required: isGiftRequired,
     },
