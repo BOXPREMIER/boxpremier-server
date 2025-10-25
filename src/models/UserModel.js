@@ -22,10 +22,25 @@ const userSchema = new mongoose.Schema({
     country: { type: String, required: isCustomerType },
 
     status: { type: Boolean, default: true },
+
+    //soft-delete field
+    deleteAt: { type: Date, default: null }
 },
     {
         timestamps: true
     });
+
+//middleware for exclude soft-deleted users in queries... 
+userSchema.pre(/^find/, function (next) {
+    this.where({ deleteAt: null });
+    next();
+});
+
+//method to soft-delete
+userSchema.methods.softDelete = function () {
+    this.deleteAt = new Date();
+    return this.save();
+}
 
 const UserModel = mongoose.model('User', userSchema);
 
