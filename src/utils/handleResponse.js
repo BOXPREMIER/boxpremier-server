@@ -15,9 +15,16 @@ export const handleNotFound = (res, message = "Not found") => {
     });
 };
 
+export const handleBadResquet = (res, message) => {
+    return res.status(400).json({
+        success: false,
+        message
+    });
+};
+
 //success
 
-export const handleSucess = (res, data, message) => {
+export const handleSuccess = (res, data, message) => {
     return res.status(200).json({
         sucess: true,
         message,
