@@ -24,3 +24,10 @@ export const handleSucess = (res, data, message) => {
         data
     });
 };
+
+export const handleNoContent = (res, message) => {
+    return res.status(200).json({
+        sucess: true,
+        message
+    });
+};
