@@ -22,6 +22,13 @@ export const handleBadResquest = (res, message) => {
     });
 };
 
+export const handleUnauthorized = (res, message = "Unauthorized") => {
+    return res.status(401).json({
+        sucess: false,
+        message
+    });
+}
+
 //success
 
 export const handleSuccess = (res, data, message) => {
