@@ -27,7 +27,14 @@ export const handleUnauthorized = (res, message = "Unauthorized") => {
         sucess: false,
         message
     });
-}
+};
+
+export const handleForbidden = (res, message = "Access denied") => {
+    return res.status(403).json({
+        sucess: false,
+        message
+    });
+};
 
 //success
 
