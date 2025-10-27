@@ -1,6 +1,6 @@
 import UserModel from "../models/UserModel.js";
 import { tokenSign } from "../utils/handleJWT.js";
-import { handleBadResquest, handleCreated, handleError, handleSuccess, handleUnauthorized } from "../utils/handleResponse.js";
+import { handleBadRequest, handleCreated, handleError, handleSuccess, handleUnauthorized } from "../utils/handleResponse.js";
 import bcrypt from 'bcrypt';
 
 export const registerController = async (req, res) => {
@@ -10,7 +10,7 @@ export const registerController = async (req, res) => {
         const emailExists = await UserModel.findOne({ email: userData.email });
 
         if (emailExists) {
-            return handleBadResquest(res, 'Email already exists');
+            return handleBadRequest(res, 'Email already exists');
         }
 
         const hashedPassword = await bcrypt.hash(userData.password, 10);
@@ -31,7 +31,7 @@ export const loginController = async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            return handleBadResquest(res, 'Email and password are required');
+            return handleBadRequest(res, 'Email and password are required');
         }
 
         const user = await UserModel.findOne({ email });

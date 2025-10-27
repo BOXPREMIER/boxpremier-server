@@ -1,5 +1,5 @@
 import UserModel from '../models/UserModel.js';
-import { handleBadResquest, handleError, handleNoContent, handleNotFound, handleSuccess } from '../utils/handleResponse.js';
+import { handleBadRequest, handleError, handleNoContent, handleNotFound, handleSuccess } from '../utils/handleResponse.js';
 import bcrypt from 'bcrypt';
 
 export const getAllUsers = async (req, res) => {
@@ -57,7 +57,7 @@ export const updateUser = async (req, res) => {
         if (email && email !== user.email) {
             const emailExists = await UserModel.findOne({ email });
             if (emailExists) {
-                return handleBadResquest(res, 'Email already exists');
+                return handleBadRequest(res, 'Email already exists');
             }
         }
 
