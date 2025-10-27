@@ -1,6 +1,6 @@
 import UserModel from "../models/UserModel.js";
 import { tokenSign } from "../utils/handleJWT.js";
-import { handleBadResquest, handleCreated, handleError } from "../utils/handleResponse.js";
+import { handleBadResquest, handleCreated, handleError, handleSuccess, handleUnauthorized } from "../utils/handleResponse.js";
 import bcrypt from 'bcrypt';
 
 export const registerController = async (req, res) => {
@@ -24,5 +24,26 @@ export const registerController = async (req, res) => {
         return handleCreated(res, { user: safeUser, token }, 'User created successfully');
     } catch (error) {
         return handleError(res, error);
+    }
+}
+
+export const loginController = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return handleBadResquest(res, 'Email and password are required');
+        }
+
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+            return handleUnauthorized(res, 'Invalid credentials');
+        }
+
+        const token = tokenSign({ id: user._id, userType: user.userType });
+        const safeUser = await UserModel.findById(user._id).select('-password');
+
+        return handleSuccess(res, { user: safeUser, token }, 'Login successful');
+    } catch (error) {
+        handleError(res, error);
     }
 }
