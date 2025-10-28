@@ -5,12 +5,13 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { db_connection } from './src/database/db_connection.js';
 import { HOST, PORT } from './src/config/config.js';
+import AuthRoutes from './src/routers/AuthRoutes.js';
 
 const app = express();
 
 // Middlewares
 app.use(helmet());
-app.use(cors()); 
+app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
@@ -35,8 +36,11 @@ async function initializeApp() {
   }
 }
 
+//routes
+app.use('/api/auth', AuthRoutes);
+
 export const server = app.listen(PORT, () => {
-    console.log(`API running on http://${HOST}:${PORT}`)
+  console.log(`API running on http://${HOST}:${PORT}`)
 })
 
 initializeApp();
