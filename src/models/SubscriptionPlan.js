@@ -32,13 +32,13 @@ const SubscriptionPlanSchema = new Schema(
         timestamps: true, 
     });
 
-userSchema.pre(/^find/, function (next) {
+SubscriptionPlanSchema.pre(/^find/, function (next) {
     this.where({ deleteAt: null });
     next();
 });
 
 //method to soft-delete
-userSchema.methods.softDelete = function () {
+SubscriptionPlanSchema.methods.softDelete = function () {
     this.deleteAt = new Date();
     return this.save();
 }
