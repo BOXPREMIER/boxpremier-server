@@ -6,17 +6,44 @@ import bcrypt from 'bcrypt';
 export const registerController = async (req, res) => {
     try {
 
-        const userData = req.body;
-        const emailExists = await UserModel.findOne({ email: userData.email });
+        const {
+            firstName,
+            lastName,
+            email,
+            password,
+            phone,
+            street,
+            number,
+            floor,
+            postalCode,
+            city,
+            province,
+            country
+        } = req.body;
+
+        const emailExists = await UserModel.findOne({ email });
 
         if (emailExists) {
             return handleBadRequest(res, 'Email already exists');
         }
 
-        const hashedPassword = await bcrypt.hash(userData.password, 10);
-        userData.password = hashedPassword;
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = await UserModel.create(userData);
+        const newUser = await UserModel.create({
+            userType: 'customer',
+            firstName,
+            lastName,
+            email,
+            password: hashedPassword,
+            phone,
+            street,
+            number,
+            floor,
+            postalCode,
+            city,
+            province,
+            country
+        });
 
         const token = tokenSign({ id: newUser._id, userType: newUser.userType });
         const safeUser = await UserModel.findById(newUser._id).select('-password');

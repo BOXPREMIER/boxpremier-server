@@ -1,5 +1,5 @@
 import UserModel from '../models/UserModel.js';
-import { handleBadRequest, handleError, handleNoContent, handleNotFound, handleSuccess } from '../utils/handleResponse.js';
+import { handleBadRequest, handleError, handleNoContent, handleNotFound, handleSuccess, handleForbidden } from '../utils/handleResponse.js';
 import bcrypt from 'bcrypt';
 
 export const getAllUsers = async (req, res) => {
@@ -15,10 +15,14 @@ export const getAllUsers = async (req, res) => {
 export const getOneUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const user = await UserModel.findById(id).select('-password -email');
+        const user = await UserModel.findById(id).select('-password');
 
         if (!user) {
             return handleNotFound(res, 'User not found');
+        }
+
+        if (req.user.userType === 'customer' && !req.user._id.equals(id)) {
+            return handleForbidden(res, 'You can only view your own profile');
         }
 
         return handleSuccess(res, user);
@@ -59,6 +63,10 @@ export const updateUser = async (req, res) => {
             if (emailExists) {
                 return handleBadRequest(res, 'Email already exists');
             }
+        }
+
+        if (req.user.userType === 'customer' && !req.user._id.equals(id)) {
+            return handleForbidden(res, 'You can only update your own profile');
         }
 
         const updateData = {};

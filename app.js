@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import { db_connection } from './src/database/db_connection.js';
 import { HOST, PORT } from './src/config/config.js';
 import AuthRoutes from './src/routers/AuthRoutes.js';
+import UserRoutes from './src/routers/UserRoutes.js';
 
 const app = express();
 
@@ -38,6 +39,7 @@ async function initializeApp() {
 
 //routes
 app.use('/api/auth', AuthRoutes);
+app.use('/api/users', UserRoutes);
 
 export const server = app.listen(PORT, () => {
   console.log(`API running on http://${HOST}:${PORT}`)
