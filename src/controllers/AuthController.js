@@ -39,6 +39,11 @@ export const loginController = async (req, res) => {
             return handleUnauthorized(res, 'Invalid credentials');
         }
 
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return handleUnauthorized(res, 'Invalid credentials');
+        }
+
         const token = tokenSign({ id: user._id, userType: user.userType });
         const safeUser = await UserModel.findById(user._id).select('-password');
 
