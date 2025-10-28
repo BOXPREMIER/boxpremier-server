@@ -1,6 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET, JWT_EXPIRES } from '../config/config.js';
 
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET is not defined in .env file');
+}
+
 export const tokenSign = (payload) => {
     try {
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES });
