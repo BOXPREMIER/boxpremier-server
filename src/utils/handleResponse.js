@@ -60,3 +60,10 @@ export const handleCreated = (res, data, message = "Created successfully") => {
         data
     });
 };
+
+export const handleConflict = (res, message = "Conflicto") => {
+  return res.status(409).json({
+    success: false,
+    message,
+  });
+};
