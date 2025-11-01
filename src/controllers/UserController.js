@@ -1,5 +1,5 @@
 import UserModel from '../models/UserModel.js';
-import { handleBadRequest, handleError, handleNoContent, handleNotFound, handleSuccess, handleForbidden } from '../utils/handleResponse.js';
+import { handleBadRequest, handleError, handleNoContent, handleNotFound, handleSuccess, handleForbidden, handleCreated } from '../utils/handleResponse.js';
 import bcrypt from 'bcrypt';
 
 export const getAllUsers = async (req, res) => {
@@ -89,4 +89,105 @@ export const updateUser = async (req, res) => {
     } catch (error) {
         return handleError(res, error);
     }
-}
+};
+
+export const updatePaymentMethod = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { type, lastFourDigits, cardHolderName, expirationDate, paymentToken } = req.body;
+
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return handleNotFound(res, 'User not found');
+        }
+
+        user.paymentMethod = {
+            type,
+            lastFourDigits,
+            cardHolderName,
+            expirationDate,
+            paymentToken
+        };
+
+        await user.save();
+
+        const safeUser = await UserModel.findById(userId).select('-password');
+        return handleSuccess(res, safeUser, 'Payment method updated successfully');
+    } catch (error) {
+        return handleError(res, error);
+    }
+};
+
+export const updateUserPaymentMethodAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { type, lastFourDigits, cardHolderName, expirationDate, paymentToken } = req.body;
+
+        const user = await UserModel.findById(id);
+        if (!user) {
+            return handleNotFound(res, 'User not found');
+        }
+
+        user.paymentMethod = { type, lastFourDigits, cardHolderName, expirationDate, paymentToken };
+
+        await user.save();
+
+        const safeUser = await UserModel.findById(id).select('-password');
+        return handleSuccess(res, safeUser, 'Payment method updated successfully');
+    } catch (error) {
+        return handleError(res, error);
+    }
+};
+
+export const createUser = async (req, res) => {
+    try {
+        const {
+            userType,
+            firstName,
+            lastName,
+            email,
+            password,
+            phone,
+            street,
+            number,
+            floor,
+            postalCode,
+            city,
+            province,
+            country
+        } = req.body;
+
+        const emailExists = await UserModel.findOne({ email });
+        if (emailExists) {
+            return handleBadRequest(res, 'Email already exists');
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const userData = {
+            userType: userType || 'customer',
+            firstName,
+            lastName,
+            email,
+            password: hashedPassword
+        };
+
+        if (userType === 'customer') {
+            userData.phone = phone;
+            userData.street = street;
+            userData.number = number;
+            userData.floor = floor;
+            userData.postalCode = postalCode;
+            userData.city = city;
+            userData.province = province;
+            userData.country = country;
+        }
+
+        const newUser = await UserModel.create(userData);
+        const safeUser = await UserModel.findById(newUser._id).select('-password');
+
+        return handleCreated(res, safeUser, 'User created successfully');
+    } catch (error) {
+        return handleError(res, error);
+    }
+};
