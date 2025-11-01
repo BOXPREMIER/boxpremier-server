@@ -50,7 +50,7 @@ const SubscriptionSchema = new Schema(
       required: function () { return this.isGift === true; }
     },
     giftActivatedAt: { type: Date, default: null },
-    // endDate: { type: Date, default: null },  ← REMOVE ESSA LINHA
+   
     // Payment
     payMethod: { type: String, required: true },
     createdBy: {
