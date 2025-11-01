@@ -8,7 +8,9 @@ const paymentSchema = new mongoose.Schema({
     status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending', required: true },
     gateway: { type: String, enum: ['multisafepay', 'paypal', 'redsys'], required: true },
     transactionId: { type: String, default: null },
-    paymentDate: { type: Date, default: null }
+    paymentDate: { type: Date, default: null },
+    paymentType: { type: String, enum: ['recurring', 'one-time'], required: true },
+    monthsPaid: { type: Number, default: 1 }
 }, {
     timestamps: true
 });
