@@ -17,3 +17,5 @@ OrderRouter.patch('/:id/cancel', checkRole(['admin']), cancelOrder);
 
 //only in dev
 OrderRouter.delete('/:id', checkRole(['admin']), deleteOrder);
+
+export default OrderRouter;
