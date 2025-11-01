@@ -30,27 +30,39 @@ const SubscriptionSchema = new Schema(
     // Dates
     startDate: { type: Date },
     nextPayDate: { type: Date },
-    endDate: { type: Date },
-
+    endDate: { type: Date, default: null },
     status: {
       type: String,
       enum: ["active", "paused", "canceled", "expired", "pending"],
       default: "pending",
       index: true,
     },
-
     // Gift
     isGift: { type: Boolean, default: false },
-
-    // if isGift == true 
     giftFromId: {
       type: Types.ObjectId, ref: "User", required: isGiftRequired,
     },
-
-    giftMessage:{type: String, trim: true,maxlength: 500 },
-
+    giftMessage: { type: String, trim: true, maxlength: 500 },
+    giftDurationMonths: {
+      type: Number,
+      enum: [1, 3, 6, 12],
+      default: 1,
+      required: function () { return this.isGift === true; }
+    },
+    giftActivatedAt: { type: Date, default: null },
+   
     // Payment
     payMethod: { type: String, required: true },
+    createdBy: {
+      type: Types.ObjectId,
+      ref: "User",
+      index: true
+    },
+    updatedBy: {
+      type: Types.ObjectId,
+      ref: "User",
+      index: true
+    }
   },
   {
     // it adds createdAt y updatedAt
