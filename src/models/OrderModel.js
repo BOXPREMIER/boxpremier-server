@@ -21,7 +21,7 @@ const orderSchema = new mongoose.Schema({
     // delivered
     status: {
         type: String,
-        enum: ['pending', 'preparing', 'shipped', 'delivered'],
+        enum: ['pending', 'preparing', 'shipped', 'delivered', 'cancelled'],
         default: 'pending',
         required: true
     },
@@ -32,7 +32,10 @@ const orderSchema = new mongoose.Schema({
     shippedDate: Date,
     deliveredDate: Date,
 
-    totalAmount: { type: Number, required: true }
+    totalAmount: { type: Number, required: true },
+
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, {
     timestamps: true
 });

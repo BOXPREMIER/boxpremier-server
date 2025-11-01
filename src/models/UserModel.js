@@ -21,6 +21,17 @@ const userSchema = new mongoose.Schema({
     province: { type: String, required: isCustomerType },
     country: { type: String, required: isCustomerType },
 
+    preferences: {
+        emailNotifications: { type: Boolean, default: true }
+    },
+    paymentMethod: {
+        type: { type: String, enum: ['card', 'paypal', 'multisafepay'] },
+        lastFourDigits: String,
+        cardHolderName: String,
+        expirationDate: String,
+        paymentToken: String
+    },
+
     status: { type: Boolean, default: true },
 
     //soft-delete field
