@@ -1,7 +1,7 @@
 import express from 'express';
 import { createPlan, getAllPlans, getPlanById, updatePlan, deletePlan } from '../controllers/SubscriptionPlanController.js';
 import { authenticate, checkRole } from '../middlewares/authMiddleware.js';
-import { createPlanValidator, updatePlanValidator } from '../validators/PlanValidator.js';
+import { createPlanValidator, updatePlanValidator } from '../validators/SubscriptionPlanValidations.js';
 
 const PlanRouter = express.Router();
 

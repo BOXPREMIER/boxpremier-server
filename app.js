@@ -11,6 +11,7 @@ import OrderRoutes from './src/routers/OrderRoutes.js';
 import SubsRouter from './src/routers/SubscriptionsRoutes.js';
 import PaymentRoutes from './src/routers/PaymentRoutes.js'
 import PlanRouter from './src/routers/SubscriptionPlanRoutes.js';
+import AdminRoutes from './src/routers/AdminRoutes.js';
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use('/api/orders', OrderRoutes);
 app.use('/api/subs', SubsRouter);
 app.use('/api/payments', PaymentRoutes);
 app.use('/api/plans', PlanRouter);
+app.use('/api/dashboard', AdminRoutes);
 
 export const server = app.listen(PORT, () => {
   console.log(`API running on http://${HOST}:${PORT}`)
