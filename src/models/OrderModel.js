@@ -32,7 +32,10 @@ const orderSchema = new mongoose.Schema({
     shippedDate: Date,
     deliveredDate: Date,
 
-    totalAmount: { type: Number, required: true }
+    totalAmount: { type: Number, required: true },
+
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, {
     timestamps: true
 });

@@ -1,7 +1,7 @@
 import OrderModel from '../models/OrderModel.js';
 import UserModel from '../models/UserModel.js';
-import SubscriptionModel from '../models/SuscriptionModel.js';
-import SubscriptionPlan from '../models/SubscriptionPlan.js';
+import SubscriptionModel from '../models/SubscriptionModel.js';
+import SubscriptionPlanModel from '../models/SubscriptionPlanModel.js';
 
 import { handleCreated, handleError, handleForbidden, handleNoContent, handleNotFound, handleSuccess } from '../utils/handleResponse.js';
 
@@ -15,7 +15,7 @@ export const getAllOrders = async (req, res) => {
 
             // customer user see only their orders
         } else {
-            orders = (await OrderModel.find({ userId: req.user._id }).populate('subscriptionId')).sort({ orderDate: -1 });
+            orders = await OrderModel.find({ userId: req.user._id }).populate('subscriptionId').sort({ orderDate: -1 });
         }
 
         return handleSuccess(res, orders);
@@ -63,6 +63,11 @@ export const deleteOrder = async (req, res) => {
 export const createOrder = async (req, res) => {
     try {
         const { userId, subscriptionId } = req.body;
+        const isAdmin = req.user.userType === 'admin';
+
+        if (!isAdmin) {
+            return handleForbidden(res, 'Only admins can create orders manually');
+        }
 
         const user = await UserModel.findById(userId);
         if (!user) {
@@ -74,7 +79,7 @@ export const createOrder = async (req, res) => {
             return handleNotFound(res, 'Subscription not found');
         }
 
-        const subsPlan = await SubscriptionPlan.findById(subscription.subscriptionPlan);
+        const subsPlan = await SubscriptionPlanModel.findById(subscription.subscriptionPlan);
         if (!subsPlan) {
             return handleNotFound(res, 'Plan not found');
         }
@@ -99,7 +104,8 @@ export const createOrder = async (req, res) => {
 
             orderDate: new Date(),
             totalAmount: subsPlan.price,
-            status: 'pending'
+            status: 'pending',
+            createdBy: req.user._id
         });
 
         return handleCreated(res, order, 'Order created');
@@ -143,6 +149,9 @@ export const updateOrderStatus = async (req, res) => {
         }
 
         order.status = status;
+        if (req.user) {
+            order.updatedBy = req.user._id;
+        }
         await order.save();
 
         return handleSuccess(res, order, 'Order status updated successfully');
@@ -154,7 +163,7 @@ export const updateOrderStatus = async (req, res) => {
 export const updateOrderAddress = async (req, res) => {
     try {
         const { id } = req.params;
-        const { street, number, floor, postalCode, city, province, country } = req.body;
+        const { fullName, phone, street, number, floor, postalCode, city, province, country } = req.body;
 
         const order = await OrderModel.findById(id);
         if (!order) {
@@ -165,6 +174,8 @@ export const updateOrderAddress = async (req, res) => {
             return handleForbidden(res, 'Cannot change address of delivered order');
         }
 
+        if (fullName) order.fullName = fullName;
+        if (phone) order.phone = phone;
         if (street) { order.street = street };
         if (number) { order.number = number };
         if (floor !== undefined) { order.floor = floor };
@@ -172,10 +183,11 @@ export const updateOrderAddress = async (req, res) => {
         if (city) { order.city = city };
         if (province) { order.province = province };
         if (country) { order.country = country };
+        if (req.user) { order.updatedBy = req.user._id };
 
         await order.save();
 
-        return handleSuccess(res, order, 'Order addres updated successfully');
+        return handleSuccess(res, order, 'Order address updated successfully');
     } catch (error) {
         return handleError(res, error);
     }
@@ -198,7 +210,9 @@ export const updateOrderTracking = async (req, res) => {
         if (carrier !== undefined) {
             order.carrier = carrier;
         }
-
+        if (req.user) {
+            order.updatedBy = req.user._id;
+        }
         await order.save();
         return handleSuccess(res, order, 'Order tracking updated successfully');
     } catch (error) {
@@ -220,6 +234,9 @@ export const cancelOrder = async (req, res) => {
         }
 
         order.status = 'cancelled';
+        if (req.user) {
+            order.updatedBy = req.user._id;
+        }
         await order.save();
 
         return handleSuccess(res, order, 'Order cancelled successfully');
