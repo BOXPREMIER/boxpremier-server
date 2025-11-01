@@ -10,6 +10,7 @@ import UserRoutes from './src/routers/UserRoutes.js';
 import OrderRoutes from './src/routers/OrderRoutes.js';
 import SubsRouter from './src/routers/SubscriptionsRoutes.js';
 import PaymentRoutes from './src/routers/PaymentRoutes.js'
+import PlanRouter from './src/routers/SubscriptionPlanRoutes.js';
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use('/api/users', UserRoutes);
 app.use('/api/orders', OrderRoutes);
 app.use('/api/subs', SubsRouter);
 app.use('/api/payments', PaymentRoutes);
+app.use('/api/plans', PlanRouter);
 
 export const server = app.listen(PORT, () => {
   console.log(`API running on http://${HOST}:${PORT}`)
