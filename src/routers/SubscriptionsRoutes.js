@@ -1,7 +1,7 @@
 import express from 'express';
 import { createSubscription, getUserSubscriptions, cancelSubscription, updateSubscription, getSubscriptionById } from '../controllers/SubscriptionController.js';
 import { authenticate, checkRole } from '../middlewares/authMiddleware.js';
-import { createSubscriptionValidator, updateSubscriptionValidator } from '../validators/SubscriptionValidator.js';
+import { createSubscriptionValidator, updateSubscriptionValidator } from '../validators/SubscriptionValidations.js';
 
 const SubsRouter = express.Router();
 
