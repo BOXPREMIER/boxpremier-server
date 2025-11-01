@@ -1,35 +1,48 @@
-// controllers/subscriptions.controller.js
 import mongoose from "mongoose";
-import Subscription from "../models/Subscription.js";
-import { handleBadRequest, handleConflict, handleCreated, handleError, handleForbidden, handleNotFound } from "../utils/handleResponse.js";
+import SubscriptionModel from "../models/SubscriptionModel.js";
+import {
+  handleBadRequest,
+  handleConflict,
+  handleCreated,
+  handleError,
+  handleForbidden,
+  handleNotFound,
+  handleSuccess, // <- úsalo si quieres respuestas unificadas en listados
+} from "../utils/handleResponse.js";
 
-// === Configuración de populate ===
+//  Populate configuration 
 const populateRefs = [
   { path: "user", select: "_id firstName lastName email" },
   { path: "giftFromId", select: "_id firstName lastName email" },
   { path: "subscriptionPlan", select: "_id name price currency cadence boxType bottlesPerBox" },
 ];
 
-// === Helper para queries con populate (excluye borrados) ===
-const findWithPopulate = (filter = {}) => 
-  Subscription.find({ ...filter, isDeleted: false })
+ // Filters
+const findWithPopulate = (filter = {}) =>
+  SubscriptionModel.find({ ...filter, isDeleted: false })
     .select("-__v")
     .populate(populateRefs)
     .lean();
 
 const findByIdWithPopulate = (id) =>
-  Subscription.findOne({ _id: id, isDeleted: false })
+  SubscriptionModel.findOne({ _id: id, isDeleted: false })
     .select("-__v")
     .populate(populateRefs)
     .lean();
 
 // === Helpers de autorización ===
 const isAdmin = (req) => req?.user?.userType === "admin";
+
+// Permite comparar tanto ObjectId como documentos populados
+const asId = (v) => (v && typeof v === "object" && v._id ? v._id.toString() : v?.toString());
+
 const canRead = (req, sub) => {
   const userId = req.user?._id?.toString();
-  return isAdmin(req) || 
-         sub.user?.toString() === userId || 
-         sub.giftFromId?.toString() === userId;
+  return (
+    isAdmin(req) ||
+    asId(sub.user) === userId ||
+    asId(sub.giftFromId) === userId
+  );
 };
 
 // === Controllers ===
@@ -37,22 +50,22 @@ const canRead = (req, sub) => {
 // POST /subscriptions (crear suscripción normal)
 export const createSubscription = async (req, res) => {
   try {
-    const { 
-      user, 
-      subscriptionPlan, 
-      wineType, 
-      boxType, 
-      boxSize, 
-      startDate, 
-      nextPayDate, 
-      payMethod 
+    const {
+      user,
+      subscriptionPlan,
+      wineType,
+      boxType,
+      boxSize,
+      startDate,
+      nextPayDate,
+      payMethod,
     } = req.body;
 
     if (!subscriptionPlan || !payMethod) {
-      return handleBadRequest(res, "subscriptionPlan and payMethod are required" );
+      return handleBadRequest(res, "subscriptionPlan and payMethod are required");
     }
 
-    const created = await Subscription.create({
+    const created = await SubscriptionModel.create({
       user: user ?? req.user?._id,
       subscriptionPlan,
       wineType,
@@ -70,32 +83,32 @@ export const createSubscription = async (req, res) => {
     return handleCreated(res, doc, "Subscription created");
   } catch (err) {
     console.error("createSubscription error:", err);
-    return  handleError(res, err);
+    return handleError(res, err);
   }
 };
 
 // POST /subscriptions/gift (crear regalo)
 export const createGift = async (req, res) => {
   try {
-    const { 
-      user, 
-      subscriptionPlan, 
-      giftMessage, 
-      payMethod, 
-      startDate, 
+    const {
+      user,
+     subscriptionPlan,
+      giftMessage,
+      payMethod,
+      startDate,
       nextPayDate,
       wineType,
       boxType,
-      boxSize
+      boxSize,
     } = req.body;
 
     if (!user || !subscriptionPlan || !payMethod) {
-         return handleBadRequest(res, "subscriptionPlan, payMethod and user are required" );
+      return handleBadRequest(res, "subscriptionPlan, payMethod and user are required");
     }
 
-    const created = await Subscription.create({
+    const created = await SubscriptionModel.create({
       user,
-      subscriptionPlan,
+     subscriptionPlan,
       isGift: true,
       giftFromId: req.user?._id,
       giftMessage,
@@ -113,7 +126,7 @@ export const createGift = async (req, res) => {
     return handleCreated(res, doc, "Gift created");
   } catch (err) {
     console.error("createGift error:", err);
-   return  handleError(res, err);
+    return handleError(res, err);
   }
 };
 
@@ -130,35 +143,37 @@ export const listSubscriptions = async (req, res) => {
     return res.json(docs);
   } catch (err) {
     console.error("listSubscriptions error:", err);
-    return  handleError(res, err);
+    return handleError(res, err);
   }
 };
 
 // GET /subscriptions/gifts/sent (regalos enviados)
 export const listGiftsSent = async (req, res) => {
   try {
-    const docs = await findWithPopulate({ 
-      isGift: true, 
-      giftFromId: req.user?._id 
+    const docs = await findWithPopulate({
+      isGift: true,
+      giftFromId: req.user?._id,
     });
+    // return handleSuccess(res, docs, "Gifts sent");
     return res.json(docs);
   } catch (err) {
     console.error("listGiftsSent error:", err);
-    return  handleError(res, err);
+    return handleError(res, err);
   }
 };
 
 // GET /subscriptions/gifts/received (regalos recibidos)
 export const listGiftsReceived = async (req, res) => {
   try {
-    const docs = await findWithPopulate({ 
-      isGift: true, 
-      user: req.user?._id 
+    const docs = await findWithPopulate({
+      isGift: true,
+      user: req.user?._id,
     });
+    // return handleSuccess(res, docs, "Gifts received");
     return res.json(docs);
   } catch (err) {
     console.error("listGiftsReceived error:", err);
-    return  handleError(res, err);
+    return handleError(res, err);
   }
 };
 
@@ -167,25 +182,24 @@ export const getSubscriptionById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.isValidObjectId(id)) {  
-      return handleBadRequest(res, err);
+    if (!mongoose.isValidObjectId(id)) {
+      return handleBadRequest(res, "Invalid SubscriptionModel id");
     }
 
-    const sub = await Subscription.findOne({ _id: id, isDeleted: false })
-      .populate(populateRefs);
+    const sub = await SubscriptionModel.findOne({ _id: id, isDeleted: false }).populate(populateRefs);
 
     if (!sub) {
-      return handleNotFound(res, err);
+      return handleNotFound(res, "Subscription not found");
     }
 
     if (!canRead(req, sub)) {
-      return handleForbidden(res, err);
+      return handleForbidden(res, "Access denied");
     }
 
     return res.json(sub);
   } catch (err) {
     console.error("getSubscriptionById error:", err);
-    return  handleError(res, err);
+    return handleError(res, err);
   }
 };
 
@@ -195,20 +209,20 @@ export const cancelSubscription = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.isValidObjectId(id)) {
-      return handleBadRequest(res, err);;
+      return handleBadRequest(res, "Invalid subscription id");
     }
 
-    const sub = await Subscription.findOne({ _id: id, isDeleted: false });
+    const sub = await SubscriptionModel.findOne({ _id: id, isDeleted: false });
     if (!sub) {
-       return handleNotFound(res, err);;
+      return handleNotFound(res, "Subscription not found");
     }
 
     if (!canRead(req, sub)) {
-      return handleForbidden(res, err);
+      return handleForbidden(res, "Access denied");
     }
 
     if (["canceled", "expired"].includes(sub.status)) {
-      return handleConflict(res, err);
+      return handleConflict(res, `Esta suscripción ya está ${sub.status}`);
     }
 
     sub.status = "canceled";
@@ -219,7 +233,7 @@ export const cancelSubscription = async (req, res) => {
     return res.json(doc);
   } catch (err) {
     console.error("cancelSubscription error:", err);
-    return  handleError(res, err);
+    return handleError(res, err);
   }
 };
 
@@ -230,16 +244,16 @@ export const updateSubscription = async (req, res) => {
     const { wineType, boxType, boxSize, status, nextPayDate } = req.body;
 
     if (!mongoose.isValidObjectId(id)) {
-      return handleBadRequest(res, err);;
+      return handleBadRequest(res, "Invalid subscription id");
     }
 
-    const sub = await Subscription.findOne({ _id: id, isDeleted: false });
+    const sub = await SubscriptionModel.findOne({ _id: id, isDeleted: false });
     if (!sub) {
-       return handleNotFound(res, err);
+      return handleNotFound(res, "Subscription not found");
     }
 
     if (!canRead(req, sub)) {
-      return handleForbidden(res, err);
+      return handleForbidden(res, "Access denied");
     }
 
     // Solo permite actualizar ciertos campos
@@ -247,9 +261,12 @@ export const updateSubscription = async (req, res) => {
     if (boxType !== undefined) sub.boxType = boxType;
     if (boxSize !== undefined) sub.boxSize = boxSize;
     if (nextPayDate !== undefined) sub.nextPayDate = nextPayDate;
-    
+
     // Solo admin puede cambiar el status
-    if (status !== undefined && isAdmin(req)) {
+    if (status !== undefined) {
+      if (!isAdmin(req)) {
+        return handleForbidden(res, "Only admin can change status");
+      }
       sub.status = status;
     }
 
@@ -259,7 +276,7 @@ export const updateSubscription = async (req, res) => {
     return res.json(doc);
   } catch (err) {
     console.error("updateSubscription error:", err);
-    return  handleError(res, err);
+    return handleError(res, err);
   }
 };
 
@@ -269,16 +286,16 @@ export const deleteSubscription = async (req, res) => {
     const { id } = req.params;
 
     if (!isAdmin(req)) {
-      return handleForbidden(res, err);
+      return handleForbidden(res, "Only admin can delete");
     }
 
     if (!mongoose.isValidObjectId(id)) {
-      return handleBadRequest(res, err);
+      return handleBadRequest(res, "Invalid subscription id");
     }
 
-    const sub = await Subscription.findOne({ _id: id, isDeleted: false });
+    const sub = await SubscriptionModel.findOne({ _id: id, isDeleted: false });
     if (!sub) {
-      return handleNotFound(res, err);
+      return handleNotFound(res, "Subscription not found");
     }
 
     // Soft delete: solo marca como eliminado
@@ -286,10 +303,10 @@ export const deleteSubscription = async (req, res) => {
     sub.deletedAt = new Date();
     await sub.save();
 
-    return res.json({ message: "Suscripción eliminada (soft delete)" });
+    return handleSuccess(res, { _id: id }, "Suscripción eliminada (soft delete)");
   } catch (err) {
     console.error("deleteSubscription error:", err);
-    return  handleError(res, err);
+    return handleError(res, err);
   }
 };
 
@@ -299,17 +316,16 @@ export const restoreSubscription = async (req, res) => {
     const { id } = req.params;
 
     if (!isAdmin(req)) {
-      return handleForbidden(res, err);
+      return handleForbidden(res, "Only admin can restore");
     }
 
     if (!mongoose.isValidObjectId(id)) {
-      return handleBadRequest(res, err);
+      return handleBadRequest(res, "Invalid subscription id");
     }
 
-    const sub = await Subscription.findOne({ _id: id, isDeleted: true });
+    const sub = await SubscriptionModel.findOne({ _id: id, isDeleted: true });
     if (!sub) {
-        
-      return handleNotFound(res, err);
+      return handleNotFound(res, "Deleted subscription not found");
     }
 
     // Restaurar: quita las marcas de eliminado
@@ -318,10 +334,10 @@ export const restoreSubscription = async (req, res) => {
     await sub.save();
 
     const doc = await findByIdWithPopulate(id);
-    return res.json({ message: "Suscripción restaurada", subscription: doc });
+    return handleSuccess(res, { message: "Suscripción restaurada", subscription: doc });
   } catch (err) {
     console.error("restoreSubscription error:", err);
-    return  handleError(res, err);
+    return handleError(res, err);
   }
 };
 
@@ -329,18 +345,19 @@ export const restoreSubscription = async (req, res) => {
 export const listDeletedSubscriptions = async (req, res) => {
   try {
     if (!isAdmin(req)) {
-      return handleForbidden(res, err);
+      return handleForbidden(res, "Only admin can list deleted subscriptions");
     }
 
-    const docs = await Subscription.find({ isDeleted: true })
+    const docs = await SubscriptionModel.find({ isDeleted: true })
       .select("-__v")
       .sort({ deletedAt: -1 })
       .populate(populateRefs)
       .lean();
 
+    // return handleSuccess(res, docs, "Deleted subscriptions");
     return res.json(docs);
   } catch (err) {
     console.error("listDeletedSubscriptions error:", err);
-    return  handleError(res, err);
+    return handleError(res, err);
   }
 };
