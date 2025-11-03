@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 
 export const getAllUsers = async (req, res) => {
     try {
-        const users = await UserModel.find().select('-password -email');
+        const users = await UserModel.find().select('-password');
 
         return handleSuccess(res, users);
     } catch (error) {

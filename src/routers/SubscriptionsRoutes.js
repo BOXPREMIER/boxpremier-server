@@ -8,6 +8,7 @@ const SubsRouter = express.Router();
 SubsRouter.use(authenticate);
 
 SubsRouter.post('/', createSubscriptionValidator, createSubscription);
+SubsRouter.get('/', getUserSubscriptions);
 SubsRouter.get('/details/:id', getSubscriptionById);
 SubsRouter.get('/:userId', checkRole(['admin']), getUserSubscriptions);
 SubsRouter.put('/:id', updateSubscriptionValidator, updateSubscription);
