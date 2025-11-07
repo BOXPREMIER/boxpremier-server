@@ -3,7 +3,7 @@ import SubscriptionPlanModel from '../models/SubscriptionPlanModel.js';
 import UserModel from '../models/UserModel.js';
 import { handleError, handleSuccess, handleNotFound, handleBadRequest, handleCreated, handleForbidden } from '../utils/handleResponse.js';
 
-export const createSubscription = async (req, res) => { 
+export const createSubscription = async (req, res) => {
   try {
     const { subscriptionPlanId, wineType, userId } = req.body;
     const isAdmin = req.user.userType === 'admin';
@@ -52,7 +52,7 @@ export const getUserSubscriptions = async (req, res) => {
     const isAdmin = req.user.userType === 'admin';
     const userId = req.params.userId || req.user._id;
 
-    if (!isAdmin && userId !== req.user._id.toString()) {
+    if (!isAdmin && userId.toString() !== req.user._id.toString()) {
       return handleForbidden(res, 'You can only view your own subscriptions');
     }
 
