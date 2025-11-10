@@ -5,7 +5,7 @@ import { handleError, handleSuccess, handleNotFound, handleBadRequest, handleCre
 
 export const createSubscription = async (req, res) => {
   try {
-    const { subscriptionPlanId, wineType, userId } = req.body;
+    const { subscriptionPlanId, wineType, userId, isGift, giftInfo } = req.body;
     const isAdmin = req.user.userType === 'admin';
 
     const targetUserId = isAdmin && userId ? userId : req.user._id;
@@ -15,20 +15,57 @@ export const createSubscription = async (req, res) => {
       return handleNotFound(res, 'Subscription plan not found');
     }
 
-    const user = await UserModel.findById(targetUserId);
-    if (!user) {
+    const purchaser = await UserModel.findById(targetUserId);
+    if (!purchaser) {
       return handleNotFound(res, 'User not found');
     }
 
-    if (!user.paymentMethod || !user.paymentMethod.type) {
+    if (!purchaser.paymentMethod || !purchaser.paymentMethod.type) {
       return handleBadRequest(res, 'Payment method required');
+    }
+
+    let recipientUserId = targetUserId;
+
+    if (isGift && giftInfo) {
+      if (!giftInfo.recipientEmail || !giftInfo.recipientName || !giftInfo.recipientPhone) {
+        return handleBadRequest(res, 'Recipient data required for gift subscription');
+      }
+
+      if (!giftInfo.recipientAddress || !giftInfo.recipientAddress.street || !giftInfo.recipientAddress.number) {
+        return handleBadRequest(res, 'Recipient address required for gift subscription');
+      }
+
+      let recipient = await UserModel.findOne({ email: giftInfo.recipientEmail });
+
+      if (!recipient) {
+        const [firstName, ...lastNameParts] = giftInfo.recipientName.split(' ');
+        const lastName = lastNameParts.join(' ') || firstName;
+
+        recipient = await UserModel.create({
+          userType: 'customer',
+          firstName,
+          lastName,
+          email: giftInfo.recipientEmail,
+          phone: giftInfo.recipientPhone,
+          password: Math.random().toString(36).slice(-12),
+          street: giftInfo.recipientAddress.street,
+          number: giftInfo.recipientAddress.number,
+          floor: giftInfo.recipientAddress.floor || '',
+          postalCode: giftInfo.recipientAddress.postalCode,
+          city: giftInfo.recipientAddress.city,
+          province: giftInfo.recipientAddress.province,
+          country: giftInfo.recipientAddress.country || 'ES'
+        });
+      }
+
+      recipientUserId = recipient._id;
     }
 
     const nextPayDate = new Date();
     nextPayDate.setDate(nextPayDate.getDate() + 30);
 
-    const subscription = await SubscriptionModel.create({
-      user: targetUserId,
+    const subscriptionData = {
+      user: recipientUserId,
       subscriptionPlan: subscriptionPlanId,
       wineType,
       boxType: plan.boxType,
@@ -36,10 +73,24 @@ export const createSubscription = async (req, res) => {
       startDate: new Date(),
       nextPayDate: nextPayDate,
       status: 'pending',
-      isGift: false,
-      payMethod: user.paymentMethod.type,
+      isGift: isGift || false,
+      payMethod: purchaser.paymentMethod.type,
       createdBy: req.user._id
-    });
+    };
+
+    if (isGift && giftInfo) {
+      const durationMonths = giftInfo.giftDurationMonths || 1;
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + durationMonths);
+
+      subscriptionData.giftFromId = targetUserId;
+      subscriptionData.giftMessage = giftInfo.giftMessage || '';
+      subscriptionData.giftDurationMonths = durationMonths;
+      subscriptionData.giftActivatedAt = startDate;
+      subscriptionData.endDate = endDate;
+    }
+
+    const subscription = await SubscriptionModel.create(subscriptionData);
 
     return handleCreated(res, subscription, 'Subscription created successfully');
   } catch (error) {
