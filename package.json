@@ -27,7 +27,8 @@
       "text",
       "lcov",
       "html"
-    ]
+    ],
+    "silent": true
   },
   "keywords": [],
   "author": "",
