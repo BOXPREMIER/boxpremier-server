@@ -24,7 +24,7 @@ const SubscriptionSchema = new Schema(
     },
 
     wineType: { type: String, enum: ["mixed", "rose", "red", "sparkling"], trim: true },
-    boxType: { type: String, enum: ["basic", "premium"], trim: true },
+    boxType: { type: String, trim: true },
     boxSize: { type: Number, min: 1 },
 
     // Dates

@@ -4,8 +4,8 @@ import { handleValidationErrors } from '../utils/handleValidation.js';
 export const createPlanValidator = [
     body('boxType')
         .trim()
-        .notEmpty().withMessage('Box type is required')
-        .isIn(['basic', 'premium']).withMessage('Invalid box type'),
+        .notEmpty().withMessage('Box type is required'),
+       // .isIn(['basic', 'premium']).withMessage('Invalid box type'),
 
     body('boxSize')
         .notEmpty().withMessage('Box size is required')
@@ -25,8 +25,8 @@ export const createPlanValidator = [
 export const updatePlanValidator = [
     body('boxType')
         .optional()
-        .trim()
-        .isIn(['basic', 'premium']).withMessage('Invalid box type'),
+        .trim(),
+        //.isIn(['basic', 'premium']).withMessage('Invalid box type'),
 
     body('boxSize')
         .optional()

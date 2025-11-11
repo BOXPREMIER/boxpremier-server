@@ -8,7 +8,7 @@ const SubscriptionPlanSchema = new Schema(
     {
      boxType: {
         type: String,
-        enum: ["basic", "premium"], 
+        // enum: ["basic", "premium"], 
         required: true  
      },
      boxSize: {

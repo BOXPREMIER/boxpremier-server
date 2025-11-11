@@ -5,7 +5,7 @@ const orderSchema = new mongoose.Schema({
     subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription', required: true },
 
     //copied from user at order creation
-    boxType: { type: String, enum: ['basic', 'premium'], required: true },
+    boxType: { type: String, required: true },
     wineType: { type: String, enum: ['mixed', 'rose', 'red', 'sparkling'], required: true },
     boxSize: { type: Number, required: true },
     fullName: { type: String, required: true },
