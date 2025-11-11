@@ -5,12 +5,29 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll --no-cache --detectOpenHandles"
+    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll --no-cache --detectOpenHandles",
+    "test:coverage": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --no-cache --detectOpenHandles"
   },
   "type": "module",
   "jest": {
     "testEnvironment": "node",
-    "transform": {}
+    "transform": {},
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/app.js",
+      "!src/config/**",
+      "!src/database/**",
+      "!src/utils/**",
+      "!src/validators/**",
+      "!src/middlewares/**",
+      "!src/models/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ]
   },
   "keywords": [],
   "author": "",
