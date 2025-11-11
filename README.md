@@ -106,7 +106,13 @@ Una vez iniciado, consulta la colección de Postman incluida en la documentació
 
 ![Diagrama](./docs/img/xxx)
 
+## Documentación de la API
+
+La documentación detallada de los endpoints, parámetros y respuestas está disponible en una colección de Postman junto con el repositorio.
+
+[Clique aquí](https://documenter.getpostman.com/view/46421388/2sB3WttK9M)
+
 ## Contacto
 
 Para consultas o soporte:
-- 🏢 **Organización:** [BoxPremier](https://github.com/BOXPREMIER)
+- **Organización:** [BoxPremier](https://github.com/BOXPREMIER)
