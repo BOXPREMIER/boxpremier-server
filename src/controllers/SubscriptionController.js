@@ -60,7 +60,7 @@ export const createSubscription = async (req, res) => {
 
       recipientUserId = recipient._id;
     }
-
+    const startDate = new Date();
     const nextPayDate = new Date();
     nextPayDate.setDate(nextPayDate.getDate() + 30);
 
