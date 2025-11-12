@@ -5,9 +5,31 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll --no-cache --detectOpenHandles",
+    "test:coverage": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --no-cache --detectOpenHandles"
   },
   "type": "module",
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {},
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/app.js",
+      "!src/config/**",
+      "!src/database/**",
+      "!src/utils/**",
+      "!src/validators/**",
+      "!src/middlewares/**",
+      "!src/models/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "silent": true
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -15,6 +37,7 @@
   "devDependencies": {
     "cross-env": "^10.1.0",
     "jest": "^30.2.0",
+    "mongodb-memory-server": "^10.3.0",
     "nodemon": "^3.1.10",
     "supertest": "^7.1.4"
   },
